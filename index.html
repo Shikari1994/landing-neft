@@ -620,9 +620,24 @@
       );
     }
 
+    /* Кольца about-visual на светлом фоне */
+    #about .about-ring      { border-color: rgba(19,47,106,0.12); }
+    #about .about-ring-tick { background: #132f6a; }
+
     @media (max-width: 700px) {
-      .hero-hud { display: none; }
-      .signal-canvas { display: none; }
+      /* HUD — компактный в правом верхнем углу */
+      .hero-hud {
+        top: 64px; right: 12px;
+        padding: 8px 11px; min-width: 118px;
+      }
+      .hero-hud::before { font-size: 0.5rem; margin-bottom: 8px; padding-bottom: 7px; }
+      .hud-row    { margin-bottom: 6px; gap: 14px; }
+      .hud-val    { font-size: 0.72rem; }
+      .hud-label  { font-size: 0.53rem; }
+      .hud-status { margin-top: 8px; padding-top: 8px; font-size: 0.5rem; }
+
+      /* Сигнал — выше stats bar */
+      .signal-canvas { bottom: 178px; height: 44px; opacity: 0.2; }
     }
   </style>
 </head>
@@ -753,8 +768,8 @@
     <div class="about-ring"><div class="about-ring-tick"></div></div>
     <div class="about-center">
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="32,4 60,56 4,56" fill="none" stroke="rgba(212,226,255,0.6)" stroke-width="1.5"/>
-        <polygon points="32,18 50,50 14,50" fill="rgba(74,143,255,0.2)" stroke="rgba(74,143,255,0.5)" stroke-width="1"/>
+        <polygon points="32,4 60,56 4,56" fill="none" stroke="rgba(4,31,71,0.4)" stroke-width="1.5"/>
+        <polygon points="32,18 50,50 14,50" fill="rgba(19,47,106,0.12)" stroke="rgba(19,47,106,0.45)" stroke-width="1"/>
       </svg>
     </div>
   </div>
