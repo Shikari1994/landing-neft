@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>НЕФТЬ-СЕРВИС — Телеметрия для бурения</title>
+  <style>
+    :root {
+      --dark:   #041F47;
+      --mid:    #132f6a;
+      --light:  #D4E2FF;
+      --accent: #4a8fff;
+      --white:  #ffffff;
+      --text-secondary: rgba(212,226,255,0.7);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--dark);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ─── НАВИГАЦИЯ ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      transition: background 0.4s, backdrop-filter 0.4s, padding 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(4,31,71,0.85);
+      backdrop-filter: blur(12px);
+      padding: 14px 60px;
+      border-bottom: 1px solid rgba(212,226,255,0.1);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: var(--white);
+    }
+    .nav-logo svg { width: 36px; height: 36px; }
+    .nav-logo-text { font-size: 1rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      color: var(--light); text-decoration: none; font-size: 0.875rem;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      opacity: 0.8; transition: opacity 0.2s, color 0.2s;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--white); }
+    .nav-cta {
+      background: transparent; border: 1px solid rgba(212,226,255,0.5);
+      color: var(--white); padding: 10px 24px; border-radius: 2px;
+      font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+      text-decoration: none;
+    }
+    .nav-cta:hover { background: rgba(212,226,255,0.1); border-color: var(--white); }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      background: radial-gradient(ellipse 80% 80% at 70% 50%, #1a3a7a 0%, #0a2550 40%, #041F47 100%);
+    }
+    .hero-bg-layer {
+      position: absolute; inset: 0; pointer-events: none;
+    }
+    /* Фоновые дашед дуги — svg декор */
+    .arc-svg {
+      position: absolute; right: -5%; top: 50%; transform: translateY(-50%);
+      width: 55vw; opacity: 0.18;
+      will-change: transform;
+    }
+    .arc-svg-2 {
+      position: absolute; right: 8%; top: 50%; transform: translateY(-50%);
+      width: 30vw; opacity: 0.12;
+      will-change: transform;
+    }
+    /* Floating particles */
+    .particles { position: absolute; inset: 0; overflow: hidden; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(212,226,255,0.3);
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(1); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.5; }
+      100% { transform: translateY(-80vh) scale(0.5); opacity: 0; }
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 800px; padding: 0 40px;
+      text-align: left;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--light); opacity: 0.8; margin-bottom: 28px;
+    }
+    .hero-eyebrow::before {
+      content: ''; display: block; width: 40px; height: 1px;
+      background: var(--accent);
+    }
+    .hero-title {
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 800; line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-title .accent-word {
+      color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 1.1rem; line-height: 1.7;
+      color: var(--text-secondary); max-width: 520px;
+      margin-bottom: 48px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, #2a5abf, var(--accent));
+      color: var(--white); border: none; padding: 16px 36px;
+      font-size: 0.9rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; border-radius: 2px;
+      cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent;
+      color: var(--light); border: 1px solid rgba(212,226,255,0.4);
+      padding: 16px 36px; font-size: 0.9rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; border-radius: 2px;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-outline:hover { background: rgba(212,226,255,0.08); border-color: var(--light); }
+    .hero-scroll-hint {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-secondary); animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(6px); }
+    }
+    .hero-scroll-hint svg { width: 20px; opacity: 0.5; }
+    /* Stats bar */
+    .hero-stats {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid rgba(212,226,255,0.1);
+    }
+    .stat-item {
+      padding: 28px 40px;
+      border-right: 1px solid rgba(212,226,255,0.1);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
+      color: var(--white); line-height: 1;
+    }
+    .stat-num sup { font-size: 1rem; vertical-align: super; }
+    .stat-label {
+      font-size: 0.75rem; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-top: 6px;
+    }
+
+    /* ─── ОБЩИЕ СЕКЦИИ ─── */
+    section { padding: 120px 60px; }
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+    }
+    .section-eyebrow::before {
+      content: ''; width: 30px; height: 1px; background: var(--accent);
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700;
+      letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 20px;
+    }
+    .section-desc {
+      font-size: 1rem; color: var(--text-secondary);
+      line-height: 1.8; max-width: 560px;
+    }
+
+    /* ─── О КОМПАНИИ ─── */
+    #about {
+      background: var(--dark);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center;
+    }
+    .about-visual {
+      position: relative; height: 480px;
+    }
+    .about-ring {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      border-radius: 50%;
+      border: 1px dashed rgba(212,226,255,0.2);
+    }
+    .about-ring:nth-child(1) { width: 380px; height: 380px; animation: spinSlow 40s linear infinite; }
+    .about-ring:nth-child(2) { width: 280px; height: 280px; animation: spinSlow 25s linear infinite reverse; }
+    .about-ring:nth-child(3) { width: 180px; height: 180px; animation: spinSlow 15s linear infinite; }
+    @keyframes spinSlow { to { transform: translate(-50%,-50%) rotate(360deg); } }
+    .about-ring-tick {
+      position: absolute; width: 6px; height: 6px;
+      background: var(--accent); border-radius: 50%;
+      top: 0; left: 50%; transform: translateX(-50%) translateY(-3px);
+    }
+    .about-center {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center;
+    }
+    .about-center svg { width: 64px; height: 64px; }
+    .about-features { margin-top: 48px; display: flex; flex-direction: column; gap: 20px; }
+    .feature-row {
+      display: flex; align-items: flex-start; gap: 16px;
+      opacity: 0; transform: translateX(-20px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .feature-row.visible { opacity: 1; transform: none; }
+    .feature-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border: 1px solid rgba(212,226,255,0.2); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+    }
+    .feature-icon svg { width: 22px; }
+    .feature-text h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+    .feature-text p  { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── ПРОДУКТЫ ─── */
+    #products {
+      background: linear-gradient(180deg, var(--dark) 0%, #071d40 100%);
+    }
+    .products-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 64px; flex-wrap: wrap; gap: 32px;
+    }
+    .products-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    }
+    .product-card {
+      position: relative; padding: 48px 36px; overflow: hidden;
+      background: rgba(19,47,106,0.3);
+      border: 1px solid rgba(212,226,255,0.07);
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s, transform 0.6s, background 0.3s, border-color 0.3s;
+    }
+    .product-card.visible { opacity: 1; transform: translateY(0); }
+    .product-card:hover {
+      background: rgba(19,47,106,0.7);
+      border-color: rgba(74,143,255,0.3);
+    }
+    .product-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      transform: scaleX(0); transition: transform 0.4s;
+    }
+    .product-card:hover::after { transform: scaleX(1); }
+    .product-num {
+      font-size: 0.7rem; letter-spacing: 0.2em; color: var(--accent);
+      margin-bottom: 32px; font-weight: 600;
+    }
+    .product-icon {
+      width: 52px; height: 52px; margin-bottom: 28px;
+      color: var(--light); opacity: 0.8;
+    }
+    .product-icon svg { width: 100%; }
+    .product-card h3 {
+      font-size: 1.15rem; font-weight: 700; line-height: 1.3;
+      margin-bottom: 16px; letter-spacing: -0.01em;
+    }
+    .product-card p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7; }
+    .product-arrow {
+      position: absolute; bottom: 36px; right: 36px;
+      width: 32px; height: 32px;
+      border: 1px solid rgba(212,226,255,0.2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--light); opacity: 0;
+      transition: opacity 0.3s, border-color 0.3s;
+    }
+    .product-card:hover .product-arrow { opacity: 1; border-color: var(--accent); }
+
+    /* ─── КАК РАБОТАЕТ ─── */
+    #how {
+      background: var(--dark);
+      position: relative; overflow: hidden;
+    }
+    .how-bg-line {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 1px; background: linear-gradient(180deg, transparent, rgba(212,226,255,0.1) 20%, rgba(212,226,255,0.1) 80%, transparent);
+    }
+    .how-header { text-align: center; max-width: 600px; margin: 0 auto 80px; }
+    .how-header .section-desc { margin: 0 auto; }
+    .steps {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .step {
+      padding: 48px; position: relative;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .step.visible { opacity: 1; transform: none; }
+    .step:nth-child(odd)  { border-right: 1px solid rgba(212,226,255,0.07); }
+    .step:nth-child(1),
+    .step:nth-child(2)   { border-bottom: 1px solid rgba(212,226,255,0.07); }
+    .step-num {
+      font-size: 4rem; font-weight: 900; letter-spacing: -0.03em;
+      color: rgba(212,226,255,0.06); line-height: 1;
+      position: absolute; top: 28px; right: 36px;
+    }
+    .step h3 {
+      font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+      color: var(--white);
+    }
+    .step p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7; }
+    .step-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); margin-bottom: 24px;
+      box-shadow: 0 0 0 4px rgba(74,143,255,0.15);
+    }
+
+    /* ─── IFRAME PLACEHOLDER ─── */
+    #store {
+      background: linear-gradient(180deg, #071d40 0%, var(--dark) 100%);
+      text-align: center;
+    }
+    .store-header { max-width: 600px; margin: 0 auto 56px; }
+    .store-header .section-desc { margin: 16px auto 0; }
+    .iframe-wrap {
+      max-width: 1100px; margin: 0 auto;
+      border: 1px solid rgba(212,226,255,0.12);
+      border-radius: 4px; overflow: hidden;
+    }
+    .iframe-wrap iframe {
+      width: 100%; height: 800px; border: none; display: block;
+    }
+
+    /* ─── КОНТАКТЫ ─── */
+    #contact { background: var(--dark); }
+    .contact-cards {
+      display: flex; justify-content: center; gap: 2px;
+      margin-top: 48px; flex-wrap: wrap;
+    }
+    .contact-card {
+      display: flex; align-items: center; gap: 20px;
+      padding: 36px 48px;
+      border: 1px solid rgba(212,226,255,0.08);
+      flex: 1; min-width: 240px; max-width: 340px;
+      background: rgba(19,47,106,0.2);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .contact-card:hover {
+      background: rgba(19,47,106,0.45);
+      border-color: rgba(74,143,255,0.25);
+    }
+    .ci-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(212,226,255,0.15); border-radius: 2px;
+      color: var(--accent);
+    }
+    .ci-icon svg { width: 18px; }
+    .ci-text label { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; }
+    .ci-text span { font-size: 0.95rem; color: var(--white); }
+
+    /* ─── ФУТЕР ─── */
+    footer {
+      background: #020f24;
+      padding: 40px 60px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+      border-top: 1px solid rgba(212,226,255,0.07);
+    }
+    .footer-logo { display: flex; align-items: center; gap: 12px; }
+    .footer-logo svg { width: 28px; }
+    .footer-logo-text { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .footer-copy { font-size: 0.8rem; color: var(--text-secondary); }
+
+    /* ─── АНИМАЦИИ ВХОДА ─── */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      nav { padding: 18px 32px; }
+      nav.scrolled { padding: 12px 32px; }
+      section { padding: 80px 32px; }
+      #about { grid-template-columns: 1fr; }
+      .about-visual { display: none; }
+      #contact { grid-template-columns: 1fr; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .products-grid { grid-template-columns: 1fr 1fr; }
+      footer { padding: 32px; }
+    }
+    @media (max-width: 700px) {
+      .nav-links, .nav-cta { display: none; }
+      section { padding: 64px 24px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .step:nth-child(odd)  { border-right: none; }
+
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { padding: 20px 24px; }
+      footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ НАВИГАЦИЯ ═══ -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">
+    <svg viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 38,34 2,34" fill="none" stroke="white" stroke-width="2"/>
+      <polygon points="20,10 31,30 9,30" fill="rgba(74,143,255,0.4)"/>
+      <line x1="20" y1="2" x2="20" y2="34" stroke="white" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+    </svg>
+    <span class="nav-logo-text">Нефть-Сервис</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">О компании</a></li>
+    <li><a href="#products">Продукты</a></li>
+    <li><a href="#how">Технологии</a></li>
+    <li><a href="#store">Магазин ЗИП</a></li>
+    <li><a href="#contact">Контакты</a></li>
+  </ul>
+  <a class="nav-cta" href="#contact">Связаться</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <div class="hero-bg-layer">
+    <!-- Parallax дашед дуги -->
+    <svg class="arc-svg" id="arcParallax1" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="600" cy="300" r="500" stroke="white" stroke-width="1" stroke-dasharray="6 10"/>
+      <circle cx="600" cy="300" r="370" stroke="white" stroke-width="1" stroke-dasharray="4 14"/>
+      <circle cx="600" cy="300" r="250" stroke="white" stroke-width="1" stroke-dasharray="3 12"/>
+      <line x1="600" y1="0" x2="600" y2="600" stroke="white" stroke-width="0.5" stroke-dasharray="5,8"/>
+      <line x1="300" y1="300" x2="600" y2="300" stroke="white" stroke-width="0.5" stroke-dasharray="5,8"/>
+      <!-- crosshair -->
+      <line x1="450" y1="118" x2="450" y2="108" stroke="white" stroke-width="1.5"/>
+      <line x1="445" y1="113" x2="455" y2="113" stroke="white" stroke-width="1.5"/>
+      <text x="460" y="117" fill="white" font-size="10" font-family="monospace">0.5</text>
+      <line x1="258" y1="430" x2="258" y2="420" stroke="white" stroke-width="1.5"/>
+      <line x1="253" y1="425" x2="263" y2="425" stroke="white" stroke-width="1.5"/>
+      <text x="268" y="428" fill="white" font-size="10" font-family="monospace">-0.5</text>
+    </svg>
+    <svg class="arc-svg-2" id="arcParallax2" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="150" r="140" stroke="white" stroke-width="0.8" stroke-dasharray="3 8"/>
+    </svg>
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Телеметрия для бурения</div>
+    <h1 class="hero-title">
+      <span>Точность</span><br>
+      на глубине<br>
+      <span class="accent-word">любого</span><br>
+      <span>горизонта</span>
+    </h1>
+    <p class="hero-desc">
+      Системы телеметрии, модули приёма и передачи данных, решения
+      для наклонно-направленного бурения — от разработки до сервисного сопровождения.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#products">Наши продукты</a>
+      <a class="btn-outline" href="#contact">Запросить КП</a>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">15<sup>+</sup></div>
+      <div class="stat-label">лет в отрасли</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">200<sup>+</sup></div>
+      <div class="stat-label">скважин оснащено</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">99.4%</div>
+      <div class="stat-label">достоверность данных</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">техподдержка</div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+    Прокрутить
+  </div>
+</section>
+
+<!-- ═══ О КОМПАНИИ ═══ -->
+<section id="about">
+  <div class="about-visual">
+    <div class="about-ring"><div class="about-ring-tick"></div></div>
+    <div class="about-ring"><div class="about-ring-tick"></div></div>
+    <div class="about-ring"><div class="about-ring-tick"></div></div>
+    <div class="about-center">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,4 60,56 4,56" fill="none" stroke="rgba(212,226,255,0.6)" stroke-width="1.5"/>
+        <polygon points="32,18 50,50 14,50" fill="rgba(74,143,255,0.2)" stroke="rgba(74,143,255,0.5)" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+  <div class="about-text">
+    <div class="section-eyebrow reveal">О компании</div>
+    <h2 class="section-title reveal">Инженерные решения<br>для нефтегазовой отрасли</h2>
+    <p class="section-desc reveal">
+      «Нефть-Сервис» разрабатывает и производит телеметрическое оборудование
+      для контроля траектории бурения. Нашими системами оснащены объекты
+      ведущих добывающих компаний России и СНГ.
+    </p>
+    <div class="about-features">
+      <div class="feature-row reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>Собственное производство</h4>
+          <p>Полный цикл: проектирование, изготовление, калибровка и сертификация оборудования.</p>
+        </div>
+      </div>
+      <div class="feature-row reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>Сертифицированное ПО</h4>
+          <p>Программное обеспечение соответствует требованиям Минпромторг РФ, внесено в реестр отечественного ПО.</p>
+        </div>
+      </div>
+      <div class="feature-row reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h4>Онлайн-мониторинг в реальном времени</h4>
+          <p>Передача данных по каналу MWD с отображением на диспетчерском пульте и в облаке.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ПРОДУКТЫ ═══ -->
+<section id="products">
+  <div class="products-header">
+    <div>
+      <div class="section-eyebrow reveal">Линейка продуктов</div>
+      <h2 class="section-title reveal">Оборудование<br>и модули</h2>
+    </div>
+    <p class="section-desc reveal" style="max-width:380px">
+      Комплексные решения для телеметрии бурения — от забойных датчиков
+      до наземных станций обработки данных.
+    </p>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-num">01</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="24" cy="24" r="20" stroke-dasharray="5 5"/>
+          <circle cx="24" cy="24" r="10"/>
+          <line x1="24" y1="4" x2="24" y2="14"/><line x1="24" y1="34" x2="24" y2="44"/>
+          <line x1="4" y1="24" x2="14" y2="24"/><line x1="34" y1="24" x2="44" y2="24"/>
+          <circle cx="24" cy="24" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>Забойная телеметрическая система MWD</h3>
+      <p>Измерение зенитного угла, азимута и апсидального угла в режиме реального времени. Передача по гидравлическому каналу или электромагнитному.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">02</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="8" y="16" width="32" height="22" rx="2"/>
+          <path d="M16 16V12a8 8 0 0116 0v4"/>
+          <circle cx="24" cy="27" r="4"/>
+          <line x1="24" y1="31" x2="24" y2="35"/>
+        </svg>
+      </div>
+      <h3>Модуль приёма и передачи данных</h3>
+      <p>Наземный блок сопряжения с буровой установкой. Приём сигналов с забоя, декодирование, передача на диспетчерский пульт и в облако.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">03</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polyline points="6,36 16,22 22,28 30,14 38,20 44,10"/>
+          <circle cx="16" cy="22" r="2" fill="currentColor"/>
+          <circle cx="30" cy="14" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>Гамма-модуль (LWD)</h3>
+      <p>Измерение естественной гамма-активности пласта в процессе бурения. Помогает определить литологию и границы продуктивных горизонтов.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">04</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="10" y="8" width="28" height="32" rx="2"/>
+          <line x1="16" y1="18" x2="32" y2="18"/>
+          <line x1="16" y1="24" x2="32" y2="24"/>
+          <line x1="16" y1="30" x2="26" y2="30"/>
+          <circle cx="34" cy="36" r="6" fill="rgba(74,143,255,0.2)" stroke="currentColor"/>
+          <polyline points="31,36 33,38 37,34" stroke="currentColor"/>
+        </svg>
+      </div>
+      <h3>Программный комплекс NaviDrill</h3>
+      <p>Диспетчерское ПО для визуализации траектории скважины, архивирования данных и формирования геологических отчётов.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">05</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M24 6v10M24 32v10M6 24h10M32 24h10"/>
+          <circle cx="24" cy="24" r="10"/>
+          <path d="M16.9 16.9l7.1 7.1" stroke-width="2"/>
+          <circle cx="24" cy="24" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>Датчик давления и температуры</h3>
+      <p>Высокоточные датчики для измерения забойных параметров: давление бурового раствора, температура пласта, вибрация КНБК.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">06</div>
+      <div class="product-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 38c0-6.6 5.4-12 12-12s12 5.4 12 12"/>
+          <path d="M6 38c0-9.9 8.1-18 18-18s18 8.1 18 18"/>
+          <circle cx="24" cy="20" r="4"/>
+          <line x1="24" y1="6" x2="24" y2="16"/>
+        </svg>
+      </div>
+      <h3>Сервис и ЗИП</h3>
+      <p>Поставка запасных частей, расходных материалов и комплектующих для всех моделей оборудования. Складская программа и срочная доставка.</p>
+      <div class="product-arrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ КАК РАБОТАЕТ ═══ -->
+<section id="how">
+  <div class="how-bg-line"></div>
+  <div class="how-header">
+    <div class="section-eyebrow reveal" style="justify-content:center">Принцип работы</div>
+    <h2 class="section-title reveal" style="text-align:center">От забоя до диспетчерской<br>— в реальном времени</h2>
+    <p class="section-desc reveal">
+      Данные о пространственном положении инструмента поступают на поверхность
+      непрерывно, без остановки бурения.
+    </p>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-dot"></div>
+      <h3>Измерение на забое</h3>
+      <p>Акселерометры и магнитометры забойного модуля фиксируют зенитный угол, азимут, температуру и давление раствора с частотой до 1 Гц.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-dot"></div>
+      <h3>Кодирование и передача</h3>
+      <p>Данные кодируются и передаются по гидравлическому каналу связи (пульсации давления) или электромагнитным сигналом через породу.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-dot"></div>
+      <h3>Декодирование на поверхности</h3>
+      <p>Наземный блок принимает сигнал, фильтрует шумы и декодирует пакеты данных в реальном времени без задержки.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">04</div>
+      <div class="step-dot"></div>
+      <h3>Визуализация и управление</h3>
+      <p>NaviDrill отображает 3D-траекторию скважины, строит планфакт и передаёт данные в корпоративную систему заказчика.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ МАГАЗИН ЗИП (IFRAME) ═══ -->
+<section id="store">
+  <div class="store-header">
+    <div class="section-eyebrow reveal" style="justify-content:center">Онлайн-магазин</div>
+    <h2 class="section-title reveal">Заказ ЗИП и модулей</h2>
+    <p class="section-desc reveal">
+      Подбирайте и заказывайте запасные части, расходные материалы
+      и модули телеметрии прямо здесь.
+    </p>
+  </div>
+  <div class="iframe-wrap reveal">
+    <iframe
+      src="https://oklimashov.fvds.ru"
+      loading="lazy"
+      allow="fullscreen"
+    ></iframe>
+  </div>
+</section>
+
+<!-- ═══ КОНТАКТЫ ═══ -->
+<section id="contact" style="display:block; text-align:center;">
+  <div class="section-eyebrow reveal" style="justify-content:center">Связаться с нами</div>
+  <h2 class="section-title reveal">Контакты</h2>
+  <div class="contact-cards reveal">
+    <div class="contact-card">
+      <div class="ci-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 10.81a19.79 19.79 0 01-3.07-8.67A2 2 0 011.95 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.74a16 16 0 006 6l1.06-1.06a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      </div>
+      <div class="ci-text">
+        <label>Телефон</label>
+        <span>+7 (800) 000-00-00</span>
+      </div>
+    </div>
+    <div class="contact-card">
+      <div class="ci-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <div class="ci-text">
+        <label>Email</label>
+        <span>info@neft-servis.ru</span>
+      </div>
+    </div>
+    <div class="contact-card">
+      <div class="ci-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <div class="ci-text">
+        <label>Адрес</label>
+        <span>г. Москва, ул. Нефтяников, 1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ФУТЕР ═══ -->
+<footer>
+  <div class="footer-logo">
+    <svg viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 38,34 2,34" fill="none" stroke="rgba(212,226,255,0.6)" stroke-width="1.5"/>
+      <polygon points="20,10 31,30 9,30" fill="rgba(74,143,255,0.3)"/>
+    </svg>
+    <span class="footer-logo-text">Нефть-Сервис</span>
+  </div>
+  <span class="footer-copy">© 2024 ООО «Нефть-Сервис». Все права защищены.</span>
+</footer>
+
+<script>
+  /* ─── Навигация: добавляем класс при скролле ─── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  /* ─── Параллакс дуг ─── */
+  const arc1 = document.getElementById('arcParallax1');
+  const arc2 = document.getElementById('arcParallax2');
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (arc1) arc1.style.transform = `translateY(calc(-50% + ${y * 0.18}px))`;
+        if (arc2) arc2.style.transform = `translateY(calc(-50% + ${y * 0.08}px))`;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  /* ─── Генерация частиц ─── */
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:${-size}px;
+      animation-duration:${Math.random()*15+10}s;
+      animation-delay:${Math.random()*12}s;
+    `;
+    container.appendChild(p);
+  }
+
+  /* ─── Intersection Observer для анимаций входа ─── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // Задержка для карточек продуктов
+        const cards = e.target.closest('.products-grid');
+        if (cards) {
+          const idx = [...cards.children].indexOf(e.target);
+          e.target.style.transitionDelay = (idx * 0.08) + 's';
+        }
+        // Задержка для feature rows
+        const features = e.target.closest('.about-features');
+        if (features) {
+          const idx = [...features.children].indexOf(e.target);
+          e.target.style.transitionDelay = (idx * 0.12) + 's';
+        }
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal, .product-card, .step, .feature-row')
+    .forEach(el => observer.observe(el));
+
+  /* ─── Счётчики в stats (анимация цифр) ─── */
+  function animateCounter(el, target, suffix='') {
+    const isFloat = String(target).includes('.');
+    const duration = 1800;
+    const start = performance.now();
+    const update = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const val = isFloat
+        ? (target * ease).toFixed(1)
+        : Math.round(target * ease);
+      el.textContent = val + suffix;
+      if (t < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const nums = [
+          { el: document.querySelectorAll('.stat-num')[0], val: 15, suf: '+' },
+          { el: document.querySelectorAll('.stat-num')[1], val: 200, suf: '+' },
+          { el: document.querySelectorAll('.stat-num')[2], val: 99.4, suf: '%' },
+        ];
+        nums.forEach(n => {
+          if (n.el) {
+            n.el.innerHTML = '';
+            animateCounter(n.el, n.val, n.suf);
+          }
+        });
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const statsEl = document.querySelector('.hero-stats');
+  if (statsEl) statsObserver.observe(statsEl);
+
+
+</script>
+</body>
+</html>
