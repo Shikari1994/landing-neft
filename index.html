@@ -402,6 +402,38 @@
     }
     .reveal.visible { opacity: 1; transform: none; }
 
+    /* ─── БУРГЕР И МОБИЛЬНОЕ МЕНЮ ─── */
+    .nav-burger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 8px; flex-direction: column; gap: 5px; z-index: 101;
+    }
+    .nav-burger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--white); border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; }
+    .nav-burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    .nav-mobile {
+      display: none; position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4,31,71,0.97);
+      backdrop-filter: blur(20px);
+      z-index: 99;
+      flex-direction: column; align-items: center; justify-content: center; gap: 40px;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile ul { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 28px; }
+    .nav-mobile-link {
+      color: var(--white); text-decoration: none;
+      font-size: 1.3rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      opacity: 0.85; transition: opacity 0.2s;
+    }
+    .nav-mobile-link:hover { opacity: 1; }
+
     /* ─── RESPONSIVE ─── */
     @media (max-width: 1024px) {
       nav { padding: 18px 32px; }
@@ -414,16 +446,69 @@
       .products-grid { grid-template-columns: 1fr 1fr; }
       footer { padding: 32px; }
     }
-    @media (max-width: 700px) {
-      .nav-links, .nav-cta { display: none; }
-      section { padding: 64px 24px; }
-      .products-grid { grid-template-columns: 1fr; }
-      .steps { grid-template-columns: 1fr; }
-      .step:nth-child(odd)  { border-right: none; }
 
+    @media (max-width: 700px) {
+      /* Навигация */
+      .nav-links, .nav-cta { display: none; }
+      .nav-burger { display: flex; }
+      nav { padding: 16px 20px; }
+      nav.scrolled { padding: 12px 20px; }
+
+      /* Секции */
+      section { padding: 64px 20px; }
+
+      /* Hero */
+      #hero {
+        background: radial-gradient(ellipse 120% 80% at 60% 40%, #1a3a7a 0%, #0a2550 40%, #041F47 100%);
+      }
+      .hero-content {
+        padding: 100px 20px 200px;
+        text-align: center;
+      }
+      .hero-eyebrow { justify-content: center; }
+      .hero-actions { justify-content: center; }
+      .hero-desc { max-width: 100%; font-size: 1rem; }
+      .hero-scroll-hint { display: none; }
+      .arc-svg, .arc-svg-2 { display: none; }
+
+      /* Stats bar */
       .hero-stats { grid-template-columns: repeat(2, 1fr); }
-      .stat-item { padding: 20px 24px; }
-      footer { padding: 24px; flex-direction: column; align-items: flex-start; }
+      .stat-item { padding: 18px 16px; }
+      .stat-num { font-size: 1.6rem; }
+      .stat-label { font-size: 0.7rem; }
+
+      /* Products */
+      .products-grid { grid-template-columns: 1fr; }
+      .products-header { flex-direction: column; align-items: flex-start; margin-bottom: 40px; }
+      .product-card { padding: 36px 24px; }
+
+      /* Steps */
+      .steps { grid-template-columns: 1fr; }
+      .step { padding: 32px 24px; }
+      .step:nth-child(odd)  { border-right: none; }
+      .step:nth-child(1),
+      .step:nth-child(2)   { border-bottom: none; }
+      .step { border-bottom: 1px solid rgba(212,226,255,0.07); }
+      .step:last-child { border-bottom: none; }
+
+      /* Iframe */
+      .iframe-wrap iframe { height: 560px; }
+
+      /* Contacts */
+      .contact-card { padding: 24px 20px; min-width: 100%; max-width: 100%; }
+      .contact-cards { flex-direction: column; gap: 2px; }
+
+      /* Footer */
+      footer {
+        padding: 24px 20px;
+        flex-direction: column; align-items: flex-start; gap: 12px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .hero-content { padding: 90px 16px 200px; }
+      .hero-title { font-size: 2.2rem; }
+      .btn-primary, .btn-outline { padding: 14px 24px; font-size: 0.82rem; }
     }
   </style>
 </head>
@@ -447,7 +532,22 @@
     <li><a href="#contact">Контакты</a></li>
   </ul>
   <a class="nav-cta" href="#contact">Связаться</a>
+  <button class="nav-burger" id="navBurger" aria-label="Меню">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Мобильное меню -->
+<div class="nav-mobile" id="navMobile">
+  <ul>
+    <li><a href="#about" class="nav-mobile-link">О компании</a></li>
+    <li><a href="#products" class="nav-mobile-link">Продукты</a></li>
+    <li><a href="#how" class="nav-mobile-link">Технологии</a></li>
+    <li><a href="#store" class="nav-mobile-link">Магазин ЗИП</a></li>
+    <li><a href="#contact" class="nav-mobile-link">Контакты</a></li>
+  </ul>
+  <a class="btn-primary" href="#contact">Связаться</a>
+</div>
 
 <!-- ═══ HERO ═══ -->
 <section id="hero">
@@ -928,6 +1028,21 @@
   const statsEl = document.querySelector('.hero-stats');
   if (statsEl) statsObserver.observe(statsEl);
 
+  /* ─── Бургер-меню ─── */
+  const burger = document.getElementById('navBurger');
+  const mobileNav = document.getElementById('navMobile');
+  burger.addEventListener('click', () => {
+    const isOpen = burger.classList.toggle('open');
+    mobileNav.classList.toggle('open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  mobileNav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      burger.classList.remove('open');
+      mobileNav.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
 
 </script>
 </body>
