@@ -494,7 +494,7 @@
       .how-bg-line, .how-bg-line-fill { display: none; }
 
       /* Iframe */
-      .iframe-wrap iframe { height: 560px; }
+      .iframe-wrap iframe { height: 80vh; }
 
       /* Contacts */
       .contact-card { padding: 24px 20px; min-width: 100%; max-width: 100%; }
@@ -634,16 +634,8 @@
     #about .about-ring-tick { background: #132f6a; }
 
     @media (max-width: 700px) {
-      /* HUD — компактный в правом верхнем углу */
-      .hero-hud {
-        top: 64px; right: 12px;
-        padding: 8px 11px; min-width: 118px;
-      }
-      .hero-hud::before { font-size: 0.5rem; margin-bottom: 8px; padding-bottom: 7px; }
-      .hud-row    { margin-bottom: 6px; gap: 14px; }
-      .hud-val    { font-size: 0.72rem; }
-      .hud-label  { font-size: 0.53rem; }
-      .hud-status { margin-top: 8px; padding-top: 8px; font-size: 0.5rem; }
+      /* HUD — скрываем, мешает тексту hero */
+      .hero-hud { display: none; }
 
       /* Сигнал — выше stats bar */
       .signal-canvas { bottom: 178px; height: 44px; opacity: 0.2; }
