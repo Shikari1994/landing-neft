@@ -488,8 +488,10 @@
       .step:nth-child(odd)  { border-right: none; }
       .step:nth-child(1),
       .step:nth-child(2)   { border-bottom: none; }
-      .step { border-bottom: 1px solid rgba(212,226,255,0.07); }
+      .step { border-bottom: 1px solid rgba(4,31,71,0.08); }
       .step:last-child { border-bottom: none; }
+      /* Вертикальная линия в 1-колоночном layout не нужна */
+      .how-bg-line, .how-bg-line-fill { display: none; }
 
       /* Iframe */
       .iframe-wrap iframe { height: 560px; }
@@ -597,6 +599,13 @@
       pointer-events: none; z-index: 1;
     }
 
+    /* ─── TILT CARD GLARE ─── */
+    .card-glare {
+      position: absolute; inset: 0;
+      pointer-events: none; z-index: 2;
+      opacity: 0; transition: opacity 0.4s;
+    }
+
     /* ─── PRODUCT CARD CORNER BRACKETS ─── */
     .product-card::before {
       content: '';
@@ -638,6 +647,84 @@
 
       /* Сигнал — выше stats bar */
       .signal-canvas { bottom: 178px; height: 44px; opacity: 0.2; }
+    }
+
+    /* ─── CURSOR GLOW ─── */
+    .cursor-glow {
+      position: absolute; pointer-events: none; z-index: 1;
+      width: 520px; height: 520px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,143,255,0.11) 0%, transparent 65%);
+      transform: translate(-50%, -50%);
+      opacity: 0; transition: opacity 0.5s;
+      will-change: left, top;
+    }
+    #hero:hover .cursor-glow { opacity: 1; }
+    @media (max-width: 700px) { .cursor-glow { display: none; } }
+
+    /* ─── HUD GRID ─── */
+    .hero-grid {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background-image: linear-gradient(rgba(74,143,255,0.032) 1px, transparent 1px);
+      background-size: 100% 68px;
+    }
+    @media (max-width: 700px) { .hero-grid { display: none; } }
+
+    /* ─── RADAR CANVAS ─── */
+    .radar-canvas {
+      position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+      width: min(42vw, 500px); height: min(42vw, 500px);
+      pointer-events: none; z-index: 1; opacity: 0.28;
+    }
+    @media (max-width: 700px) { .radar-canvas { display: none; } }
+
+    /* ─── ВРАЩАЮЩАЯСЯ ДУГА ─── */
+    .arc-rotate-wrap {
+      position: absolute; right: 2%; top: 50%;
+      width: min(46vw, 560px); height: min(46vw, 560px);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .arc-rotate-wrap svg {
+      width: 100%; height: 100%;
+      animation: arcSpinSlow 100s linear infinite;
+      opacity: 0.09;
+    }
+    @keyframes arcSpinSlow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @media (max-width: 700px) { .arc-rotate-wrap { display: none; } }
+
+    /* ─── TYPEWRITER CURSOR ─── */
+    .hero-title { opacity: 0; }
+    .hero-title .tw-cursor {
+      display: inline-block; background: none !important;
+      -webkit-background-clip: unset !important; background-clip: unset !important;
+      -webkit-text-fill-color: var(--accent) !important;
+      color: var(--accent); font-weight: 300;
+      animation: twBlink 0.75s step-end infinite;
+    }
+    @keyframes twBlink { 50% { opacity: 0; } }
+
+    /* ─── HOW LINE FILL ─── */
+    .how-bg-line-fill {
+      position: absolute; top: 0; left: 50%;
+      width: 2px; height: 0;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg,
+        rgba(74,143,255,0) 0%,
+        rgba(74,143,255,0.8) 8%,
+        rgba(74,143,255,0.8) 92%,
+        rgba(74,143,255,0) 100%);
+      pointer-events: none; z-index: 2;
+      box-shadow: 0 0 6px rgba(74,143,255,0.3);
+    }
+    .how-bg-line-fill::after {
+      content: ''; position: absolute; bottom: -4px; left: 50%;
+      transform: translateX(-50%);
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(74,143,255,0.95);
+      box-shadow: 0 0 10px 3px rgba(74,143,255,0.4);
     }
   </style>
 </head>
@@ -681,6 +768,18 @@
 <!-- ═══ HERO ═══ -->
 <section id="hero">
   <div class="hero-bg-layer">
+    <!-- HUD сетка -->
+    <div class="hero-grid"></div>
+    <!-- Вращающаяся дуга (независимо от параллакса) -->
+    <div class="arc-rotate-wrap">
+      <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="200" r="185" stroke="white" stroke-width="0.8" stroke-dasharray="3 24"/>
+        <circle cx="200" cy="200" r="115" stroke="white" stroke-width="0.5" stroke-dasharray="2 18"/>
+        <line x1="200" y1="15" x2="200" y2="385" stroke="white" stroke-width="0.4" stroke-dasharray="4,10" opacity="0.5"/>
+        <line x1="15" y1="200" x2="385" y2="200" stroke="white" stroke-width="0.4" stroke-dasharray="4,10" opacity="0.5"/>
+        <circle cx="200" cy="15" r="3" fill="white" opacity="0.5"/>
+      </svg>
+    </div>
     <!-- Parallax дашед дуги -->
     <svg class="arc-svg" id="arcParallax1" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="600" cy="300" r="500" stroke="white" stroke-width="1" stroke-dasharray="6 10"/>
@@ -699,8 +798,12 @@
     <svg class="arc-svg-2" id="arcParallax2" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="150" cy="150" r="140" stroke="white" stroke-width="0.8" stroke-dasharray="3 8"/>
     </svg>
+    <!-- Radar sonar -->
+    <canvas class="radar-canvas" id="radarCanvas"></canvas>
     <!-- Signal waveform -->
     <canvas class="signal-canvas" id="signalCanvas"></canvas>
+    <!-- Cursor glow -->
+    <div class="cursor-glow" id="cursorGlow"></div>
     <!-- Particles -->
     <div class="particles" id="particles"></div>
   </div>
@@ -845,7 +948,7 @@
         </svg>
       </div>
       <h3>Забойная телеметрическая система MWD</h3>
-      <p>Измерение зенитного угла, азимута и апсидального угла в режиме реального времени. Передача по гидравлическому каналу или электромагнитному.</p>
+      <p>Трёхосевые акселерометры и магнитометры обеспечивают измерение зенитного угла, азимута и угла отклонителя. Выпускается в двух исполнениях: с импульсным (гидравлическим) и электромагнитным каналом передачи данных.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -863,8 +966,8 @@
           <line x1="24" y1="31" x2="24" y2="35"/>
         </svg>
       </div>
-      <h3>Модуль приёма и передачи данных</h3>
-      <p>Наземный блок сопряжения с буровой установкой. Приём сигналов с забоя, декодирование, передача на диспетчерский пульт и в облако.</p>
+      <h3>Наземный блок декодирования</h3>
+      <p>Демодулирует импульсы давления или электромагнитный сигнал, автоматически рассчитывает инклинометрические параметры и передаёт данные на рабочую станцию геолога и в систему удалённого мониторинга.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -882,7 +985,7 @@
         </svg>
       </div>
       <h3>Гамма-модуль (LWD)</h3>
-      <p>Измерение естественной гамма-активности пласта в процессе бурения. Помогает определить литологию и границы продуктивных горизонтов.</p>
+      <p>Измерение естественной гамма-активности горных пород в процессе бурения. Используется для определения литологии, коэффициента глинистости и привязки к границам продуктивных горизонтов в реальном времени.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -903,7 +1006,7 @@
         </svg>
       </div>
       <h3>Программный комплекс NaviDrill</h3>
-      <p>Диспетчерское ПО для визуализации траектории скважины, архивирования данных и формирования геологических отчётов.</p>
+      <p>Диспетчерский комплекс для 3D-визуализации фактической траектории скважины, контроля отклонений от проектного профиля, архивирования инклинометрических данных и автоматического формирования отчётной документации.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -922,7 +1025,7 @@
         </svg>
       </div>
       <h3>Датчик давления и температуры</h3>
-      <p>Высокоточные датчики для измерения забойных параметров: давление бурового раствора, температура пласта, вибрация КНБК.</p>
+      <p>Пьезорезистивные датчики для контроля забойных условий бурения: давление промывочной жидкости, забойная температура и вибрационная нагрузка на КНБК.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -941,7 +1044,7 @@
         </svg>
       </div>
       <h3>Сервис и ЗИП</h3>
-      <p>Поставка запасных частей, расходных материалов и комплектующих для всех моделей оборудования. Складская программа и срочная доставка.</p>
+      <p>Поставка запасных частей, расходных материалов и комплектующих для всех моделей телеметрических систем. Постоянное наличие на складе, срочная отгрузка и выездное сервисное обслуживание.</p>
       <div class="product-arrow">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -955,6 +1058,7 @@
 <!-- ═══ КАК РАБОТАЕТ ═══ -->
 <section id="how">
   <div class="how-bg-line"></div>
+  <div class="how-bg-line-fill" id="howLineFill"></div>
   <div class="how-header">
     <div class="section-eyebrow reveal" style="justify-content:center">Принцип работы</div>
     <h2 class="section-title reveal" style="text-align:center">От забоя до диспетчерской<br>— в реальном времени</h2>
@@ -968,7 +1072,7 @@
       <div class="step-num">01</div>
       <div class="step-dot"></div>
       <h3>Измерение на забое</h3>
-      <p>Акселерометры и магнитометры забойного модуля фиксируют зенитный угол, азимут, температуру и давление раствора с частотой до 1 Гц.</p>
+      <p>Трёхосевые акселерометры и магнитометры фиксируют зенитный угол и азимут скважины с частотой до 1 Гц. Пьезорезистивные датчики параллельно измеряют давление и температуру на забое.</p>
     </div>
     <div class="step reveal">
       <div class="step-num">02</div>
@@ -986,7 +1090,7 @@
       <div class="step-num">04</div>
       <div class="step-dot"></div>
       <h3>Визуализация и управление</h3>
-      <p>NaviDrill отображает 3D-траекторию скважины, строит планфакт и передаёт данные в корпоративную систему заказчика.</p>
+      <p>NaviDrill отображает 3D-траекторию скважины, строит план-факт отклонений и передаёт данные в корпоративную систему заказчика по защищённому каналу.</p>
     </div>
   </div>
 </section>
@@ -1090,16 +1194,19 @@
 
   /* ─── Генерация частиц ─── */
   const container = document.getElementById('particles');
-  for (let i = 0; i < 28; i++) {
+  const pCount = window.innerWidth < 700 ? 16 : 42;
+  for (let i = 0; i < pCount; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const size = Math.random() * 3 + 1;
+    const big  = Math.random() < 0.18;
+    const size = big ? Math.random() * 4 + 3 : Math.random() * 2.5 + 0.8;
     p.style.cssText = `
       width:${size}px; height:${size}px;
       left:${Math.random()*100}%;
       bottom:${-size}px;
-      animation-duration:${Math.random()*15+10}s;
-      animation-delay:${Math.random()*12}s;
+      animation-duration:${Math.random()*18+8}s;
+      animation-delay:${Math.random()*14}s;
+      background:rgba(${big?'120,190,255':'212,226,255'},${big?0.18:0.28});
     `;
     container.appendChild(p);
   }
@@ -1218,6 +1325,206 @@
     document.getElementById('hudDept').textContent = Math.round(hudDepth) + ' m';
     document.getElementById('hudTemp').textContent = (68.0 + (Math.random()-0.5)*0.8).toFixed(1) + '°C';
   }, 1400);
+
+  /* ─── Tilt Cards (только не touch) ─── */
+  if (!('ontouchstart' in window)) document.querySelectorAll('.product-card').forEach(card => {
+    const glare = document.createElement('div');
+    glare.className = 'card-glare';
+    card.appendChild(glare);
+
+    card.addEventListener('mousemove', e => {
+      if (!card.classList.contains('visible')) return;
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top)  / rect.height;
+      const rotX = (y - 0.5) * -14;
+      const rotY = (x - 0.5) *  14;
+      card.style.transition = 'transform 0.08s ease, background 0.3s, border-color 0.3s';
+      card.style.transform  = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      glare.style.background = `radial-gradient(circle at ${x*100}% ${y*100}%, rgba(212,226,255,0.07) 0%, transparent 65%)`;
+      glare.style.opacity = '1';
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform 0.55s ease, background 0.3s, border-color 0.3s, opacity 0.6s';
+      card.style.transform  = '';
+      glare.style.opacity   = '0';
+    });
+  });
+
+  /* ─── Cursor Glow ─── */
+  const glowEl = document.getElementById('cursorGlow');
+  const heroEl = document.getElementById('hero');
+  if (glowEl && heroEl) {
+    heroEl.addEventListener('mousemove', e => {
+      const r = heroEl.getBoundingClientRect();
+      glowEl.style.left = (e.clientX - r.left) + 'px';
+      glowEl.style.top  = (e.clientY - r.top)  + 'px';
+    }, { passive: true });
+  }
+
+  /* ─── Radar Canvas ─── */
+  const radarCanvas = document.getElementById('radarCanvas');
+  if (radarCanvas) {
+    const rctx = radarCanvas.getContext('2d');
+    let rAngle = 0;
+    const blips = [
+      { a: 0.82, r: 0.43 }, { a: 2.15, r: 0.69 },
+      { a: 4.52, r: 0.30 }, { a: 5.18, r: 0.57 },
+    ];
+    const blipAlpha = blips.map(() => 0);
+
+    function resizeRadar() {
+      const s = radarCanvas.offsetWidth || 400;
+      radarCanvas.width = s;
+      radarCanvas.height = s;
+    }
+    resizeRadar();
+    window.addEventListener('resize', resizeRadar, { passive: true });
+
+    function drawRadar() {
+      const w = radarCanvas.width, h = radarCanvas.height;
+      const cx = w / 2, cy = h / 2;
+      const R  = Math.min(cx, cy) * 0.88;
+      rctx.clearRect(0, 0, w, h);
+
+      /* Концентрические кольца */
+      [0.33, 0.66, 1].forEach(f => {
+        rctx.beginPath();
+        rctx.arc(cx, cy, R * f, 0, Math.PI * 2);
+        rctx.strokeStyle = 'rgba(74,143,255,0.2)';
+        rctx.lineWidth = 0.8; rctx.stroke();
+      });
+
+      /* Оси */
+      rctx.strokeStyle = 'rgba(74,143,255,0.12)';
+      rctx.lineWidth = 0.6;
+      [[0, Math.PI], [Math.PI * 0.5, Math.PI * 1.5]].forEach(([a1, a2]) => {
+        rctx.beginPath();
+        rctx.moveTo(cx + Math.cos(a1) * R, cy + Math.sin(a1) * R);
+        rctx.lineTo(cx + Math.cos(a2) * R, cy + Math.sin(a2) * R);
+        rctx.stroke();
+      });
+
+      /* Затухающий след развёртки */
+      const steps = 32;
+      const sweep = Math.PI * 0.68;
+      for (let i = 0; i < steps; i++) {
+        const a0 = rAngle - (i / steps) * sweep;
+        const a1 = rAngle - ((i + 1) / steps) * sweep;
+        rctx.beginPath();
+        rctx.moveTo(cx, cy);
+        rctx.arc(cx, cy, R, a1, a0);
+        rctx.closePath();
+        rctx.fillStyle = `rgba(74,143,255,${(1 - i / steps) * 0.09})`;
+        rctx.fill();
+      }
+
+      /* Линия развёртки */
+      rctx.beginPath();
+      rctx.moveTo(cx, cy);
+      rctx.lineTo(cx + Math.cos(rAngle) * R, cy + Math.sin(rAngle) * R);
+      rctx.strokeStyle = 'rgba(120,195,255,0.75)';
+      rctx.lineWidth = 1.5; rctx.stroke();
+
+      /* Центральная точка */
+      rctx.beginPath(); rctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+      rctx.fillStyle = 'rgba(74,143,255,0.7)'; rctx.fill();
+
+      /* Blips */
+      blips.forEach((b, i) => {
+        const da = ((rAngle - b.a) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        if (da < 0.1) blipAlpha[i] = 1;
+        else blipAlpha[i] = Math.max(0, blipAlpha[i] - 0.006);
+        if (blipAlpha[i] > 0.02) {
+          const bx = cx + Math.cos(b.a) * R * b.r;
+          const by = cy + Math.sin(b.a) * R * b.r;
+          const grd = rctx.createRadialGradient(bx, by, 0, bx, by, 11);
+          grd.addColorStop(0, `rgba(160,225,255,${blipAlpha[i]})`);
+          grd.addColorStop(1, 'rgba(74,143,255,0)');
+          rctx.beginPath(); rctx.arc(bx, by, 11, 0, Math.PI * 2);
+          rctx.fillStyle = grd; rctx.fill();
+        }
+      });
+
+      rAngle += 0.012;
+      requestAnimationFrame(drawRadar);
+    }
+    drawRadar();
+  }
+
+  /* ─── Typewriter Hero Title ─── */
+  (function () {
+    const titleEl = document.querySelector('.hero-title');
+    if (!titleEl) return;
+
+    const segments = [
+      { text: 'Точность',   tag: 'span', cls: '' },
+      { br: true },
+      { text: 'на глубине', tag: null },
+      { br: true },
+      { text: 'любого',     tag: 'span', cls: 'accent-word' },
+      { br: true },
+      { text: 'горизонта',  tag: 'span', cls: '' },
+    ];
+
+    titleEl.style.opacity = '1';
+    titleEl.innerHTML = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'tw-cursor';
+    cursor.textContent = '▋';
+    titleEl.appendChild(cursor);
+
+    let segI = 0, charI = 0, currentNode = null;
+
+    function tick() {
+      if (segI >= segments.length) { cursor.remove(); return; }
+      const seg = segments[segI];
+
+      if (seg.br) {
+        titleEl.insertBefore(document.createElement('br'), cursor);
+        currentNode = null; segI++; charI = 0;
+        setTimeout(tick, 45); return;
+      }
+
+      if (charI === 0) {
+        if (seg.tag) {
+          currentNode = document.createElement(seg.tag);
+          if (seg.cls) currentNode.className = seg.cls;
+        } else {
+          currentNode = document.createTextNode('');
+        }
+        titleEl.insertBefore(currentNode, cursor);
+      }
+
+      currentNode.textContent += seg.text[charI];
+      charI++;
+
+      if (charI >= seg.text.length) { segI++; charI = 0; setTimeout(tick, 65); }
+      else { setTimeout(tick, 52); }
+    }
+
+    setTimeout(tick, 350);
+  })();
+
+  /* ─── How Line Fill (scroll-driven) ─── */
+  (function () {
+    const howEl  = document.getElementById('how');
+    const fillEl = document.getElementById('howLineFill');
+    if (!howEl || !fillEl) return;
+
+    function update() {
+      const rect    = howEl.getBoundingClientRect();
+      const totalH  = howEl.offsetHeight;
+      const viewH   = window.innerHeight;
+      /* 0 — секция только вошла снизу, 1 — секция вышла сверху */
+      const progress = Math.max(0, Math.min(1, (viewH - rect.top) / (viewH + totalH)));
+      fillEl.style.height = (progress * totalH) + 'px';
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  })();
 
   /* ─── Бургер-меню ─── */
   const burger = document.getElementById('navBurger');
